@@ -13,6 +13,9 @@ const authorizedUsers = [947871123, 911093644];
 const bot = new Telegraf(telegramBotToken);
 const notion = new Client({ auth: notionIntegrationToken });
 
+let relationOptions = [];
+let lastAddedRelation = null;
+
 async function getRelationOptions(databaseId) {
   try {
     const response = await notion.databases.query({
@@ -35,11 +38,46 @@ async function getRelationOptions(databaseId) {
   }
 }
 
-let relationOptions = [];
-
 async function initBot() {
   relationOptions = await getRelationOptions(relatedNotionDatabaseId);
   console.log('Available relations:', relationOptions.map(opt => opt.name).join(', '));
+
+  bot.command('when', async (ctx) => {
+    const userId = ctx.from.id;
+    if (!authorizedUsers.includes(userId)) {
+      ctx.reply('You are not authorized to use this bot.');
+      return;
+    }
+
+    const relationName = ctx.message.text.split(' ').slice(1).join(' ').trim();
+    if (!relationName) {
+      ctx.reply('When does the game happen?. Usage: /when <time_specific>');
+      return;
+    }
+
+    try {
+      await addRecordToRelationDB(relatedNotionDatabaseId, relationName);
+      ctx.reply(`Time "${relationName}" added successfully.`);
+      relationOptions = await getRelationOptions(relatedNotionDatabaseId);
+      lastAddedRelation = relationOptions.find(opt => opt.name.toLowerCase() === relationName.toLowerCase());
+      ctx.reply(`Updated Time: ${relationOptions.map(opt => opt.name).join(', ')}`);
+      ctx.reply('You can now add a record using the format: name:string,in:number,out:number');
+    } catch (error) {
+      console.error('Error adding time:', error);
+      ctx.reply('An error occurred while adding the relation. Please try again later.');
+    }
+  });
+
+  bot.command('refresh', async (ctx) => {
+    try {
+      relationOptions = await getRelationOptions(relatedNotionDatabaseId);
+      ctx.reply(`Time option refreshed add new using /when. Available options are: ${relationOptions.map(opt => opt.name).join(', ')}`);
+      lastAddedRelation = '';
+    } catch (error) {
+      console.error('Error refreshing Time relation:', error);
+      ctx.reply('An error occurred while refreshing relations. Please try again later.');
+    }
+  });
 
   bot.on(message('text'), async (ctx) => {
     const userId = ctx.from.id;
@@ -53,42 +91,29 @@ async function initBot() {
     const message = ctx.message.text;
     const commandParams = message.split(',');
 
-    if (commandParams.length !== 4) {
-      ctx.reply('Invalid command format. Use: name:string,in:number,out:number,when:string');
+    if (commandParams.length !== 3) {
+      ctx.reply('Invalid command format. Use: name:string,in:number,out:number');
       return;
     }
 
-    const [name, inValue, outValue, relation] = commandParams.map(param => param.trim());
+    const [name, inValue, outValue] = commandParams.map(param => param.trim());
 
     if (isNaN(parseInt(inValue)) || isNaN(parseInt(outValue))) {
       ctx.reply('Invalid input: "in" and "out" must be numbers.');
       return;
     }
 
+    if (!lastAddedRelation) {
+      ctx.reply('Please first add Time using the /when command.');
+      return;
+    }
+
     try {
-      if (!relationOptions.find(opt => opt.name.toLowerCase() === relation.toLowerCase())) {
-        await addRecordToRelationDB(relatedNotionDatabaseId, relation);
-        ctx.reply('New relation added to the database.');
-        relationOptions = await getRelationOptions(relatedNotionDatabaseId);
-      }
-
-      const relationOption = relationOptions.find(opt => opt.name.toLowerCase() === relation.toLowerCase());
-
-      await addRecordToNotion(name, parseInt(inValue), parseInt(outValue), relationOption.id, username);
-      ctx.reply('Record added successfully to Notion database.');
+      await addRecordToNotion(name, parseInt(inValue), parseInt(outValue), lastAddedRelation.id, username);
+      ctx.reply(`Record added successfully to Notion database with Time "${lastAddedRelation.name}".`);
     } catch (error) {
       console.error('Error processing request:', error);
       ctx.reply('An error occurred while processing your request. Please try again later.');
-    }
-  });
-
-  bot.command('refresh', async (ctx) => {
-    try {
-      relationOptions = await getRelationOptions(relatedNotionDatabaseId);
-      ctx.reply(`Relations refreshed. Available options are: ${relationOptions.map(opt => opt.name).join(', ')}`);
-    } catch (error) {
-      console.error('Error refreshing relations:', error);
-      ctx.reply('An error occurred while refreshing relations. Please try again later.');
     }
   });
 
@@ -103,7 +128,7 @@ async function addRecordToNotion(name, inValue, outValue, relationId, username) 
       Name: { title: [{ text: { content: name } }] },
       In: { number: inValue },
       Out: { number: outValue },
-      Accountant: {
+      When: {
         relation: [
           { id: relationId }
         ]
