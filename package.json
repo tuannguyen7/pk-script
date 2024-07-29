@@ -1,0 +1,21 @@
+{
+  "name": "pk_tool",
+  "version": "1.0.1",
+  "scripts": {
+    "start": "node --env-file=.env update-pk.js"
+  },
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@notionhq/client": "^2.2.15",
+    "telegraf": "^4.16.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "tle",
+  "license": "ISC",
+  "devDependencies": {
+  }
+}
