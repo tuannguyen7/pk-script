@@ -60,7 +60,6 @@ async function initBot() {
       ctx.reply(`Time "${relationName}" added successfully.`);
       relationOptions = await getRelationOptions(relatedNotionDatabaseId);
       lastAddedRelation = relationOptions.find(opt => opt.name.toLowerCase() === relationName.toLowerCase());
-      ctx.reply(`Updated Time: ${relationOptions.map(opt => opt.name).join(', ')}`);
       ctx.reply('You can now add a record using the format: name:string,in:number,out:number');
     } catch (error) {
       console.error('Error adding time:', error);
