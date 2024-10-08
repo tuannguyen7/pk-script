@@ -138,6 +138,7 @@ async function addRecordToNotion(name, inValue, outValue, relationId, username) 
 }
 
 async function addRecordToRelationDB(relationDB, relationName) {
+  const currentDate = new Date().toISOString().split('T')[0];
   await notion.pages.create({
     parent: { database_id: relationDB },
     properties: {
