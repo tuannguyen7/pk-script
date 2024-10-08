@@ -141,7 +141,8 @@ async function addRecordToRelationDB(relationDB, relationName) {
   await notion.pages.create({
     parent: { database_id: relationDB },
     properties: {
-      Day: { title: [{ text: { content: relationName } }] }       
+      Day: { title: [{ text: { content: relationName } }] },
+      Date: { date: { start: currentDate } } // Add current date      
     }
   });
 }
