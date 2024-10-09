@@ -2,10 +2,10 @@ import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters'
 import { Client } from '@notionhq/client';
 
-const telegramBotToken = '7474842656:AAFfwWhqVvdi9aovwoDibL0tAYb4TDCAKwg';
-const notionIntegrationToken = 'secret_BULzNTi8WuNO1JqCV5BgAizAkbqN1ZQYeTxCRlKUzNb';
-const notionDatabaseId = 'bcc55fe807384c319bdbf4ec672299e2';
-const relatedNotionDatabaseId = 'c98c72e20e554e1c98f7c2aac2c67d0f'
+const telegramBotToken = process.env.BOT_TOKEN;
+const notionIntegrationToken = process.env.NOTION_TOKEN;
+const notionDatabaseId = process.env.NOTION_DB_TOKEN;
+const relatedNotionDatabaseId = process.env.NOTION_RELATED_DB_ID;
 
 // List of authorized user IDs (you can add Telegram user IDs here)
 const authorizedUsers = [947871123, 911093644];
