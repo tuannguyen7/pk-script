@@ -145,7 +145,7 @@ async function addRecordToRelationDB(relationDB, relationName, username) {
     properties: {
       Day: { title: [{ text: { content: relationName } }] },
       Date: { date: { start: currentDate } },
-      AddedBy: { rich_text: [{ text: { content: username } }] } // Add current date      
+      Banker: { rich_text: [{ text: { content: username } }] } // Add current date      
     }
   });
 }
