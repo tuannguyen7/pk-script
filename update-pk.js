@@ -2,10 +2,10 @@ import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters'
 import { Client } from '@notionhq/client';
 
-const telegramBotToken = process.env.BOT_TOKEN;
-const notionIntegrationToken = process.env.NOTION_TOKEN;
-const notionDatabaseId = process.env.NOTION_DB_TOKEN;
-const relatedNotionDatabaseId = process.env.NOTION_RELATED_DB_ID;
+const telegramBotToken = '7474842656:AAFfwWhqVvdi9aovwoDibL0tAYb4TDCAKwg';
+const notionIntegrationToken = 'secret_BULzNTi8WuNO1JqCV5BgAizAkbqN1ZQYeTxCRlKUzNb';
+const notionDatabaseId = 'bcc55fe807384c319bdbf4ec672299e2';
+const relatedNotionDatabaseId = 'c98c72e20e554e1c98f7c2aac2c67d0f'
 
 // List of authorized user IDs (you can add Telegram user IDs here)
 const authorizedUsers = [947871123, 911093644];
@@ -43,6 +43,7 @@ async function initBot() {
   console.log('Available relations:', relationOptions.map(opt => opt.name).join(', '));
 
   bot.command('when', async (ctx) => {
+    const username = `${ctx.from.first_name} ${ctx.from.last_name}`.trim() || ctx.from.username;
     const userId = ctx.from.id;
     if (!authorizedUsers.includes(userId)) {
       ctx.reply('You are not authorized to use this bot.');
@@ -56,7 +57,7 @@ async function initBot() {
     }
 
     try {
-      await addRecordToRelationDB(relatedNotionDatabaseId, relationName);
+      await addRecordToRelationDB(relatedNotionDatabaseId, relationName, username);
       ctx.reply(`Time "${relationName}" added successfully.`);
       relationOptions = await getRelationOptions(relatedNotionDatabaseId);
       lastAddedRelation = relationOptions.find(opt => opt.name.toLowerCase() === relationName.toLowerCase());
@@ -137,13 +138,14 @@ async function addRecordToNotion(name, inValue, outValue, relationId, username) 
   });
 }
 
-async function addRecordToRelationDB(relationDB, relationName) {
+async function addRecordToRelationDB(relationDB, relationName, username) {
   const currentDate = new Date().toISOString().split('T')[0];
   await notion.pages.create({
     parent: { database_id: relationDB },
     properties: {
       Day: { title: [{ text: { content: relationName } }] },
-      Date: { date: { start: currentDate } } // Add current date      
+      Date: { date: { start: currentDate } },
+      AddedBy: { rich_text: [{ text: { content: username } }] } // Add current date      
     }
   });
 }
