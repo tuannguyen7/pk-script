@@ -58,7 +58,8 @@ async function initBot() {
 
     try {
       await addRecordToRelationDB(relatedNotionDatabaseId, relationName, username);
-      ctx.reply(`Time "${relationName}" added successfully.`);
+      ctx.reply(`Time "${relationName}" added successfully. Please wait 5s for database update.`);
+      await delay(5000);
       relationOptions = await getRelationOptions(relatedNotionDatabaseId);
       lastAddedRelation = relationOptions.find(opt => opt.name.toLowerCase() === relationName.toLowerCase());
       ctx.reply('You can now add a record using the format: name:string,in:number,out:number');
@@ -149,5 +150,7 @@ async function addRecordToRelationDB(relationDB, relationName, username) {
     }
   });
 }
+
+const delay = ms => new Promise(res => setTimeout(res, ms));
 
 initBot();
