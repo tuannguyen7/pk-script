@@ -23,7 +23,7 @@ async function getRelationOptions(databaseId) {
       sorts: [
         {
           property: 'Day',
-          direction: 'ascending',
+          direction: 'descending',
         },
       ],
     });
