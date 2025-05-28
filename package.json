@@ -2,7 +2,7 @@
   "name": "pk_tool",
   "version": "1.0.1",
   "scripts": {
-    "start": "node --env-file=.env update-pk.js"
+    "start": "node update-pk.js"
   },
   "main": "index.js",
   "type": "module",
